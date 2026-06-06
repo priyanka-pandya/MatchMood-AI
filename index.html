@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MatchMood AI</title>
+  
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <!-- Font Integrations -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --font-space: 'Space Grotesk', sans-serif;
+      --font-inter: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    
+    body {
+      font-family: var(--font-inter);
+      background-color: #0F0F1A;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Animations */
+    @keyframes bounceIn {
+      0% {
+        transform: translateY(-200px) scale(0.3);
+        opacity: 0;
+      }
+      50% {
+        transform: translateY(20px) scale(1.1);
+        opacity: 0.9;
+      }
+      70% {
+        transform: translateY(-10px) scale(0.95);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    @keyframes dotBounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    @keyframes gateGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+        filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.9));
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+        filter: drop-shadow(0 0 10px rgba(74, 222, 128, 1));
+        transform: scale(1.3);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+        filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.9));
+        transform: scale(1);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(12px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .animate-bounce-in {
+      animation: bounceIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .animate-shimmer {
+      background: linear-gradient(90deg, #6B7280 25%, #E5E7EB 50%, #6B7280 75%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 2.5s infinite linear;
+    }
+
+    .animate-typing-1 {
+      animation: dotBounce 0.6s infinite ease-in-out;
+    }
+    .animate-typing-2 {
+      animation: dotBounce 0.6s infinite ease-in-out;
+      animation-delay: 0.15s;
+    }
+    .animate-typing-3 {
+      animation: dotBounce 0.6s infinite ease-in-out;
+      animation-delay: 0.3s;
+    }
+
+    .gate-pulsing {
+      animation: gateGlow 1.5s infinite ease-in-out;
+    }
+
+    .tab-entering {
+      animation: slideUp 0.250s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Mobile Frame Styling for Desktop Viewport */
+    @media (min-width: 640px) {
+      .app-frame {
+        max-width: 480px;
+        height: 850px;
+        border: 8px solid #27273F;
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        background-color: #F5F7FA;
+        position: relative;
+        overflow: hidden;
+      }
+    }
+
+    /* Button Tap Feel */
+    .active-scale:active {
+      transform: scale(0.96);
+      transition: transform 100ms ease;
+    }
+
+    /* Confetti/Fireworks Canvas */
+    #effects-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 40;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-4 text-slate-800">
+
+  <!-- ==============================================
+       SPLASH SCREEN
+       ============================================== -->
+  <div id="splash-screen" class="fixed inset-0 bg-[#1C1C2E] z-50 flex flex-col items-center justify-center animate-fade-in">
+    <div class="flex flex-col items-center text-center px-6">
+      <!-- Bouncing Cricket Ball -->
+      <div class="text-7xl md:text-8xl animate-bounce-in mb-6 select-none filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)]">
+        🏏
+      </div>
+      <!-- Logo Title -->
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mb-2" style="font-family: var(--font-space);">
+        MatchMood <span class="text-[#D4AF37]">AI</span>
+      </h1>
+      <!-- Tagline -->
+      <p class="text-lg md:text-xl text-[#D4AF37] font-medium" style="font-family: var(--font-space);">
+        "Feel the game. Find your way."
+      </p>
+    </div>
+    
+    <!-- Shimmering Footer -->
+    <div class="absolute bottom-16 select-none">
+      <p class="text-sm font-semibold tracking-wider uppercase animate-shimmer" style="font-family: var(--font-mono);">
+        Powered by Gemini 1.5 Flash
+      </p>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       MAIN APP CONTAINER (Mobile Frame simulation)
+       ============================================== -->
+  <div id="app-container" class="hidden app-frame w-full h-screen sm:h-[850px] flex flex-col bg-[#F5F7FA] font-sans shadow-lg select-none">
+    
+    <!-- Toast Message Container -->
+    <div id="toast-message" class="absolute top-24 left-1/2 -translate-x-1/2 w-[90%] bg-red-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center justify-between pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-4">
+      <div class="flex items-center gap-2">
+        <span>🔑</span>
+        <span id="toast-text">Please add your Gemini API key to continue</span>
+      </div>
+    </div>
+
+    <!-- Active Effects Canvas -->
+    <canvas id="effects-canvas"></canvas>
+
+    <!-- Header & Config Section -->
+    <header class="bg-[#1C1C2E] text-white flex-none shrink-0 border-b border-[#2C2C42]">
+      
+      <!-- API Key Dropdown Bar -->
+      <div id="api-key-container" class="bg-[#141424] px-4 py-2 flex items-center justify-between gap-2 border-b border-[#242438]">
+        <div id="api-key-input-wrapper" class="w-full flex items-center gap-1.5 animate-fade-in">
+          <span class="text-sm">🔑</span>
+          <input 
+            type="password" 
+            id="api-key-input" 
+            placeholder="Gemini API Key..." 
+            class="bg-[#242438] text-white outline-none border border-slate-700/50 rounded-lg px-2.5 py-1 text-xs w-full focus:border-[#D4AF37] tracking-wider"
+          />
+          <button 
+            id="save-key-btn" 
+            class="bg-[#004C97] hover:bg-[#005cb8] text-white font-bold text-xs px-3 py-1 rounded-lg outline-none active-scale cursor-pointer"
+          >
+            Save
+          </button>
+        </div>
+        
+        <!-- Ready Badge (Initially Hidden) -->
+        <div id="api-ready-wrapper" class="hidden w-full flex items-center justify-between animate-fade-in">
+          <span class="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            ✅ MatchMood AI Ready
+          </span>
+          <button 
+            id="change-key-btn" 
+            class="text-slate-400 hover:text-white text-[11px] underline outline-none cursor-pointer"
+          >
+            Reset Key
+          </button>
+        </div>
+      </div>
+
+      <!-- Header Title Bar -->
+      <div class="px-5 py-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold flex items-center gap-2 select-none" style="font-family: var(--font-space);">
+            <span class="text-[#D4AF37]">MatchMood AI</span>
+          </h2>
+          <p id="header-subtitle" class="text-xs text-slate-300 font-medium mt-0.5">
+            🏟 Stadium Navigator • Wankhede
+          </p>
+        </div>
+        <div class="flex items-center gap-1 bg-[#2C2C42] px-2.5 py-1 rounded-full text-[10px] font-bold text-amber-400 border border-amber-500/20 uppercase tracking-widest">
+          ⚡ DEMO
+        </div>
+      </div>
+    </header>
+
+    <!-- ==============================================
+         TAB 1: HELP CONTENT (Wankhede Stadium Navigator)
+         ============================================== -->
+    <div id="help-tab-content" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 tab-entering">
+      
+      <!-- Stadium Map Wrapper Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 select-none">
+          🏟 Interactive Stadium Layout
+        </h3>
+        
+        <!-- SVG Stadium Graphic -->
+        <div class="w-full flex justify-center py-2 bg-slate-950/5 rounded-xl border border-slate-200/55 p-1 relative overflow-hidden">
+          <svg viewBox="0 0 320 220" class="w-full max-w-[280px] drop-shadow-md select-none">
+            <!-- Outermost structure stand boundary -->
+            <ellipse cx="160" cy="110" rx="140" ry="90" fill="none" stroke="#2C2C42" stroke-width="6" />
+            <ellipse cx="160" cy="110" rx="136" ry="86" fill="none" stroke="#3D3D5E" stroke-width="2" />
+            
+            <!-- Stadium Stands Base Fill -->
+            <ellipse cx="160" cy="110" rx="125" ry="75" fill="#E2E8F0" opacity="0.15" />
+            
+            <!-- Stadium Stands Ring -->
+            <ellipse cx="160" cy="110" rx="115" ry="65" fill="none" stroke="#94A3B8" stroke-width="12" />
+            
+            <!-- Boundaries -->
+            <ellipse cx="160" cy="110" rx="98" ry="48" fill="none" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 3" />
+            <ellipse cx="160" cy="110" rx="90" ry="40" fill="#2E7D32" />
+            
+            <!-- Pitch Oval Center -->
+            <rect x="145" y="100" width="30" height="20" rx="2" fill="#D4AF37" stroke="#fff" stroke-width="0.5" transform="rotate(25 160 110)" />
+            
+            <!-- Green pitch oval markings -->
+            <ellipse cx="160" cy="110" rx="80" ry="32" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+            
+            <!-- GATES (As individual Interactive Gs with glow ring effects) -->
+            <!-- Gate 1 West (Left) -->
+            <g id="gate-1-group" class="cursor-pointer">
+              <ellipse cx="20" cy="110" rx="14" ry="14" fill="rgba(255,255,255,0.7)" opacity="0" />
+              <circle id="gate-1-pulse" cx="20" cy="110" r="12" fill="none" stroke="#4ADE80" stroke-width="1" class="opacity-0" />
+              <circle id="gate-1-dot" cx="20" cy="110" r="7" fill="#E53935" class="transition-colors duration-300" />
+              <text x="20" y="113" fill="white" font-size="8" font-weight="bold" font-family="sans-serif" text-anchor="middle">1</text>
+              <text x="21" y="94" fill="#1e293b" font-size="8" font-weight="bold" text-anchor="start">West Gate 1</text>
+            </g>
+
+            <!-- Gate 2 South (Bottom) -->
+            <g id="gate-2-group" class="cursor-pointer">
+              <ellipse cx="160" cy="195" rx="14" ry="14" fill="rgba(255,255,255,0.7)" opacity="0" />
+              <circle id="gate-2-pulse" cx="160" cy="195" r="12" fill="none" stroke="#4ADE80" stroke-width="1" class="opacity-0" />
+              <circle id="gate-2-dot" cx="160" cy="195" r="7" fill="#1565C0" class="transition-colors duration-300" />
+              <text x="160" y="198" fill="white" font-size="8" font-weight="bold" font-family="sans-serif" text-anchor="middle">2</text>
+              <text x="160" y="213" fill="#1e293b" font-size="8" font-weight="bold" text-anchor="middle">South Gate 2</text>
+            </g>
+
+            <!-- Gate 3 North-East (Top-Right) -->
+            <g id="gate-3-group" class="cursor-pointer">
+              <ellipse cx="275" cy="45" rx="14" ry="14" fill="rgba(255,255,255,0.7)" opacity="0" />
+              <circle id="gate-3-pulse" cx="275" cy="45" r="12" fill="none" stroke="#4ADE80" stroke-width="1" class="opacity-0" />
+              <circle id="gate-3-dot" cx="275" cy="45" r="7" fill="#F9A825" class="transition-colors duration-300" />
+              <text x="275" y="48" fill="white" font-size="8" font-weight="bold" font-family="sans-serif" text-anchor="middle">3</text>
+              <text x="275" y="32" fill="#1e293b" font-size="8" font-weight="bold" text-anchor="middle">NE Gate 3</text>
+            </g>
+
+            <!-- Gate 4 South-East (Bottom-Right) -->
+            <g id="gate-4-group" class="cursor-pointer">
+              <ellipse cx="275" cy="165" rx="14" ry="14" fill="rgba(255,255,255,0.7)" opacity="0" />
+              <circle id="gate-4-pulse" cx="275" cy="165" r="12" fill="none" stroke="#4ADE80" stroke-width="1" class="opacity-0" />
+              <circle id="gate-4-dot" cx="275" cy="165" r="7" fill="#E91E8C" class="transition-colors duration-300" />
+              <text x="275" y="168" fill="white" font-size="8" font-weight="bold" font-family="sans-serif" text-anchor="middle">4</text>
+              <text x="275" y="183" fill="#1e293b" font-size="8" font-weight="bold" text-anchor="middle">SE Gate 4</text>
+            </g>
+          </svg>
+        </div>
+        <p class="text-[10px] text-center text-slate-400 font-medium select-none">
+          💡 Map pulses gate when identified in the MatchMood AI answers.
+        </p>
+      </div>
+
+      <!-- Quick Navigation Shortcuts -->
+      <div class="grid grid-cols-2 gap-2 flex-none shrink-0 text-white select-none">
+        <button onclick="sendShortcut('📍 My Gate', 'Which gate should I use for Section A, Row 12?')" class="active-scale cursor-pointer bg-[#004C97] hover:bg-[#003c77] rounded-xl flex items-center justify-center p-3 font-bold text-center text-sm gap-2 outline-none h-12 shadow-sm">
+          <span>📍</span> My Gate
+        </button>
+        <button onclick="sendShortcut('🍔 Nearest Food', 'Where is the nearest food stall from Gate 3?')" class="active-scale cursor-pointer bg-emerald-600 hover:bg-emerald-700 rounded-xl flex items-center justify-center p-3 font-bold text-center text-sm gap-2 outline-none h-12 shadow-sm">
+          <span>🍔</span> Near Food
+        </button>
+        <button onclick="sendShortcut('🚻 Restroom', 'Where is the nearest restroom to Gate 3?')" class="active-scale cursor-pointer bg-slate-750 hover:bg-slate-800 rounded-xl flex items-center justify-center p-3 font-bold text-center text-sm gap-2 text-slate-700 border border-slate-200 bg-white rounded-xl shadow-sm h-12">
+          <span>🚻</span> Restroom
+        </button>
+        <button onclick="sendShortcut('🏥 First Aid', 'Where is the First Aid centre?')" class="active-scale cursor-pointer bg-[#E53935] hover:bg-[#c62828] rounded-xl flex items-center justify-center p-3 font-bold text-center text-sm gap-2 outline-none h-12 shadow-sm">
+          <span>🏥</span> First Aid
+        </button>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden min-h-[220px]">
+        <div id="help-chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          <!-- Initial AI Welcome Msg -->
+          <div class="flex flex-col gap-1 items-start text-left max-w-[85%] self-start animate-fade-in animate-slide-up">
+            <span class="text-[10px] text-slate-400 font-bold ml-1 tracking-wider uppercase flex items-center gap-1">
+              ✨ MatchMood AI • Gemini 1.5 Flash
+            </span>
+            <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed font-normal shadow-xs border border-slate-200/50">
+              Welcome to the Wankhede Stadium! 🏟️ I can help find gates, seats, food, or first aid. Tap a shortcut above or type a custom question! 💙
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="border-t border-slate-100 p-2 flex items-center gap-2 bg-slate-50/80">
+          <input 
+            type="text" 
+            id="help-chat-input" 
+            placeholder="Ask stadium navigator query..." 
+            class="flex-1 bg-white border border-slate-200 rounded-full px-4 py-2.5 text-xs outline-none focus:border-[#004C97] text-slate-800"
+          />
+          <button 
+            id="help-chat-send" 
+            class="active-scale outline-none cursor-pointer bg-[#004C97] hover:bg-[#003c77] rounded-full p-2.5 text-white flex items-center justify-center shadow-md shrink-0 focus:ring-2 focus:ring-[#004C97]/30 h-[38px] w-[38px]"
+          >
+            <!-- Send SVG -->
+            <svg class="w-4 h-4 transform rotate-45 -mr-0.5 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==============================================
+         TAB 2: FAN CONTENT (IPL Fan Zone / Live reactions)
+         ============================================== -->
+    <div id="fan-tab-content" class="hidden flex-1 overflow-y-auto p-4 flex flex-col gap-4 tab-entering">
+      
+      <!-- Live Score Banner Overlay -->
+      <div class="bg-gradient-to-r from-[#004C97] to-[#1C1C2E] rounded-2xl shadow-md border border-slate-800 p-4 text-white relative overflow-hidden select-none flex-none shrink-0">
+        <!-- Abstract BG Stadium light effect -->
+        <div class="absolute -right-10 -top-10 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
+        <div class="absolute -left-10 -bottom-10 w-24 h-24 bg-[#E91E8C]/15 rounded-full blur-2xl"></div>
+        
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5 uppercase font-bold tracking-widest text-[11px] bg-red-600 px-2 py-0.5 rounded-full shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            MI vs RR • Live
+          </div>
+          <span class="text-[10px] text-slate-300 font-bold" style="font-family: var(--font-mono);">
+            WANKHEDE STADIUM
+          </span>
+        </div>
+        
+        <!-- Score and status -->
+        <div class="flex items-baseline justify-between py-1 border-b border-white/10 mb-2">
+          <h2 class="text-3xl font-black tracking-tight font-mono text-[#D4AF37]">
+            142/4 <span class="text-xs font-semibold text-slate-300">(16.2 ov)</span>
+          </h2>
+          <span class="text-xs font-bold text-pink-400">RR yet to bat</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-300 font-medium">
+          <span class="flex items-center gap-1">📍 Wankhede Pitch: Batter friendly</span>
+          <span>MatchMood AI is watching with you 👁</span>
+        </div>
+      </div>
+
+      <!-- Celebration Buttons -->
+      <div class="flex flex-col gap-2 flex-none shrink-0 select-none">
+        <!-- Wicket celebration -->
+        <button id="wicket-btn" class="active-scale cursor-pointer bg-[#E53935] hover:bg-[#c62828] text-white font-black rounded-2xl py-4 flex items-center justify-center gap-3 transition-all duration-100 shadow-md h-16 uppercase italic tracking-wider text-lg border-b-4 border-red-800">
+          🏏 WICKET!
+        </button>
+        <!-- Six celebration -->
+        <button id="six-btn" class="active-scale cursor-pointer bg-[#1565C0] hover:bg-[#0d47a1] text-white font-black rounded-2xl py-4 flex items-center justify-center gap-3 transition-all duration-100 shadow-md h-16 uppercase italic tracking-wider text-lg border-b-4 border-blue-900">
+          💥 SIX!
+        </button>
+        <!-- MI Chant generation -->
+        <button id="chant-btn" class="active-scale cursor-pointer bg-[#F9A825] hover:bg-[#e65100] text-[#1C1C2E] font-black rounded-2xl py-4 flex items-center justify-center gap-3 transition-all duration-100 shadow-md h-16 uppercase italic tracking-wider text-md border-b-4 border-amber-700">
+          🎵 Generate MI Chant
+        </button>
+      </div>
+
+      <!-- Dynamic Reaction Card Container -->
+      <div id="dynamic-reaction-card" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 transition-all duration-300 hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] text-slate-500 font-bold tracking-wider uppercase flex items-center gap-1">
+            ✨ MatchMood AI • Gemini 1.5 Flash
+          </span>
+          <span id="reaction-type-badge" class="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider"></span>
+        </div>
+        <!-- Card Text -->
+        <div id="reaction-text" class="text-slate-800 text-sm font-semibold italic border-l-4 pl-3 py-1"></div>
+        
+        <!-- Copy button (Only visible for Chant responses) -->
+        <div id="copy-chant-container" class="mt-3 flex items-center justify-end hidden">
+          <p id="copy-feedback-label" class="text-[10px] text-emerald-600 font-bold mr-3 opacity-0 transition-opacity duration-300">Chant Copied!</p>
+          <button id="copy-chant-btn" class="active-scale outline-none cursor-pointer bg-slate-900 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+            📋 Copy Chant
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Match Prediction Section -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex flex-col gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
+            <span>⚡</span> Who wins tonight?
+          </h3>
+          <p class="text-[11px] text-slate-400">
+            Ask Gemini's crazy fan persona to run high-hype win-chance percentage analysis!
+          </p>
+        </div>
+        
+        <!-- Input section -->
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="predict-input" 
+            placeholder="Type context or simply tap predict..." 
+            class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-[#F9A825] text-slate-800"
+          />
+          <button 
+            id="predict-btn" 
+            class="active-scale outline-none cursor-pointer bg-[#F9A825] text-[#1C1C2E] font-bold text-xs px-4 rounded-xl flex items-center justify-center gap-1.5 shrink-0"
+          >
+            ⚡ Predict
+          </button>
+        </div>
+
+        <!-- Predict Output Loader -->
+        <div class="flex justify-center py-2 h-14 content-center hidden" id="predict-loader">
+          <!-- Bouncing dots loader -->
+          <div class="flex items-center justify-center gap-1.5 py-2 px-3 bg-amber-50 rounded-xl">
+            <span class="text-xs font-bold text-amber-600">Checking crystals...</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-typing-1"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-typing-2"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-typing-3"></div>
+          </div>
+        </div>
+
+        <!-- Predictive output display card -->
+        <div id="predict-output" class="bg-amber-50/70 border border-amber-200/50 rounded-xl p-3.5 hidden">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[10px] text-amber-700 font-extrabold tracking-wider uppercase flex items-center gap-1 select-none">
+              ✨ MatchMood Prediction
+            </span>
+            <span id="win-pct-badge" class="bg-amber-100 border border-amber-300 text-amber-800 font-mono font-bold text-[11px] px-2 py-0.5 rounded-md"></span>
+          </div>
+          <!-- Predictive content output text -->
+          <p id="predict-text" class="text-slate-800 text-xs py-0.5 leading-relaxed font-semibold"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==============================================
+         BOTTOM NAVIGATION BAR (2 TABS)
+         ============================================== -->
+    <nav class="bg-white border-t border-slate-200 flex items-center justify-around py-2.5 flex-none shrink-0 z-10 select-none shadow-md">
+      <!-- Help Tab Navigator -->
+      <button 
+        id="tab-help-btn" 
+        onClick="switchTab('help')" 
+        class="flex-1 py-1 flex flex-col items-center justify-center opacity-100 transition-all duration-200 border-none outline-none relative cursor-pointer"
+      >
+        <span class="text-lg mb-0.5">🏟</span>
+        <span class="text-[11px] font-bold tracking-wide text-[#004C97]">Help Nav</span>
+        <span id="tab-help-indicator" class="absolute bottom-[-10px] w-12 h-[3px] bg-[#D4AF37] rounded-full"></span>
+      </button>
+
+      <!-- Fan Corner Tab Navigator -->
+      <button 
+        id="tab-fan-btn" 
+        onClick="switchTab('fan')" 
+        class="flex-1 py-1 flex flex-col items-center justify-center opacity-40 transition-all duration-200 border-none outline-none relative cursor-pointer"
+      >
+        <span class="text-lg mb-0.5">🎉</span>
+        <span class="text-[11px] font-bold tracking-wide text-slate-500">Fan corner</span>
+        <span id="tab-fan-indicator" class="absolute bottom-[-10px] w-12 h-[3px] bg-[#D4AF37] rounded-full hidden"></span>
+      </button>
+    </nav>
+
+    <!-- Hackathon Branding Footer Info -->
+    <footer class="bg-[#1C1C2E] py-1.5 text-center text-[10px] text-slate-400 flex-none shrink-0 tracking-wider">
+      MatchMood AI — Powered by Gemini 1.5 Flash | GDG Rajkot
+    </footer>
+
+  </div>
+
+  <!-- JavaScript logic definitions -->
+  <script>
+    // System configurations
+    let api_key = "AIzaSyCPUvpKCqj3oqKVRPNksBxBciJMmLO1CDg";
+    let currentTab = "help";
+    let isRequesting = false;
+
+    // References to Map elements
+    const gatesMark = {
+      1: { dot: "gate-1-dot", pulse: "gate-1-pulse" },
+      2: { dot: "gate-2-dot", pulse: "gate-2-pulse" },
+      3: { dot: "gate-3-dot", pulse: "gate-3-pulse" },
+      4: { dot: "gate-4-dot", pulse: "gate-4-pulse" }
+    };
+
+    // Splash Screen Timeout
+    setTimeout(() => {
+      const splashScreen = document.getElementById("splash-screen");
+      const appContainer = document.getElementById("app-container");
+      
+      // Animate fadeout
+      splashScreen.style.transition = "opacity 400ms ease";
+      splashScreen.style.opacity = "0";
+      
+      setTimeout(() => {
+        splashScreen.style.display = "none";
+        appContainer.style.display = "flex";
+        appContainer.classList.add("animate-fade-in");
+        
+        // Auto-scroll chat initially
+        scrollChatToBottom();
+        
+        // Load API Key if exists
+        loadSavedKey();
+      }, 400);
+    }, 2500);
+
+    // Dynamic Tab Switch logic
+    function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+
+      const helpContent = document.getElementById("help-tab-content");
+      const fanContent = document.getElementById("fan-tab-content");
+      const helpBtn = document.getElementById("tab-help-btn");
+      const fanBtn = document.getElementById("tab-fan-btn");
+      
+      const helpIndicator = document.getElementById("tab-help-indicator");
+      const fanIndicator = document.getElementById("tab-fan-indicator");
+      const headerSubtitle = document.getElementById("header-subtitle");
+
+      if (tab === "help") {
+        helpContent.classList.remove("hidden");
+        fanContent.classList.add("hidden");
+        
+        helpBtn.style.opacity = "1";
+        helpBtn.querySelector("span:last-child").style.color = "#004C97";
+        fanBtn.style.opacity = "0.4";
+        fanBtn.querySelector("span:last-child").style.color = "#64748b";
+
+        helpIndicator.classList.remove("hidden");
+        fanIndicator.classList.add("hidden");
+
+        headerSubtitle.textContent = "🏟 Stadium Navigator • Wankhede";
+      } else {
+        helpContent.classList.add("hidden");
+        fanContent.classList.remove("hidden");
+        
+        fanBtn.style.opacity = "1";
+        fanBtn.querySelector("span:last-child").style.color = "#004C97";
+        helpBtn.style.opacity = "0.4";
+        helpBtn.querySelector("span:last-child").style.color = "#64748b";
+
+        fanIndicator.classList.remove("hidden");
+        helpIndicator.classList.add("hidden");
+
+        headerSubtitle.textContent = "🏏 MI vs RR • LIVE";
+      }
+    }
+
+    // Canvas configuration for Confetti / Fireworks
+    const canvas = document.getElementById("effects-canvas");
+    const ctx = canvas.getContext("2d");
+    let animationFrameId = null;
+
+    let particles = [];
+    let waves = [];
+
+    // Resize canvas to match container frame context scale
+    function resizeCanvas() {
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    // Initial resize inside frame context
+    setTimeout(resizeCanvas, 3000);
+
+    // RequestAnimationFrame Game Loop
+    function updateEffects() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Update particles
+      particles = particles.filter(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.alpha -= p.fade;
+        p.rotation += p.rotationSpeed;
+        
+        if (p.alpha <= 0 || p.y > canvas.height) return false;
+        
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color;
+        
+        ctx.beginPath();
+        if (p.isSpark) {
+          // Draw firework star lines
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = p.lineWidth || 2;
+          ctx.beginPath();
+          ctx.moveTo(-p.size, 0);
+          ctx.lineTo(p.size, 0);
+          ctx.stroke();
+        } else {
+          // Draw Confetti shapes
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        }
+        ctx.restore();
+        return true;
+      });
+
+      if (particles.length > 0) {
+        animationFrameId = requestAnimationFrame(updateEffects);
+      } else {
+        animationFrameId = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function triggerConfetti() {
+      resizeCanvas();
+      particles = [];
+      const colors = ["#004C97", "#D4AF37", "#E91E8C", "#E53935", "#1565C0", "#F9A825", "#4ADE80", "#C084FC"];
+      
+      const particleCount = 80;
+      for (let i = 0; i < particleCount; i++) {
+        // Spawn particles towards bottom center blowing upwards
+        particles.push({
+          x: canvas.width / 2 + (Math.random() * 60 - 30),
+          y: canvas.height * 0.9,
+          vx: Math.random() * 8 - 4,
+          vy: -(Math.random() * 12 + 8),
+          gravity: 0.35,
+          alpha: 1,
+          fade: Math.random() * 0.005 + 0.005,
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: Math.random() * 0.1 - 0.05,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 8 + 6,
+          isSpark: false
+        });
+      }
+      
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(updateEffects);
+      }
+    }
+
+    function triggerFireworks() {
+      resizeCanvas();
+      particles = [];
+      const colors = ["#004C97", "#D4AF37", "#E91E8C", "#1565C0", "#F9A825", "#ffffff"];
+      
+      const burstX = canvas.width / 2;
+      const burstY = canvas.height * 0.45; // Burst center
+      const rayCount = 12;
+
+      for (let j = 0; j < 3; j++) { // Multi layered bursts
+        const baseColor = colors[Math.floor(Math.random() * colors.length)];
+        const velocityScale = 3.5 + (j * 1.5);
+        for (let i = 0; i < rayCount; i++) {
+          const angle = (i * Math.PI * 2) / rayCount;
+          particles.push({
+            x: burstX,
+            y: burstY,
+            vx: Math.cos(angle) * (Math.random() * 2 + velocityScale),
+            vy: Math.sin(angle) * (Math.random() * 2 + velocityScale),
+            gravity: 0.1,
+            alpha: 1,
+            fade: 0.015 + (Math.random() * 0.005),
+            rotation: angle,
+            rotationSpeed: 0,
+            color: baseColor,
+            size: Math.random() * 10 + 8,
+            isSpark: true,
+            lineWidth: 2.5
+          });
+        }
+      }
+      
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(updateEffects);
+      }
+    }
+
+    // API Key Storage & Handling
+    const saveKeyBtn = document.getElementById("save-key-btn");
+    const changeKeyBtn = document.getElementById("change-key-btn");
+    const apiKeyInput = document.getElementById("api-key-input");
+    const apiKeysContainer = document.getElementById("api-key-container");
+    const apiKeyWrapper = document.getElementById("api-key-input-wrapper");
+    const apiReadyWrapper = document.getElementById("api-ready-wrapper");
+
+    function loadSavedKey() {
+      const savedKey = localStorage.getItem("matchmood_api_key");
+      // Also check platform env backup
+      const envKey = "GEMINI_API_KEY_ENV"; 
+      
+      if (savedKey) {
+        api_key = savedKey;
+        setKeyReadyUI();
+      } else {
+        // If not explicit in client, don't auto crash but show input key bar
+        setKeyInputUI();
+      }
+    }
+
+    function setKeyReadyUI() {
+      apiKeyWrapper.classList.add("hidden");
+      apiReadyWrapper.classList.remove("hidden");
+    }
+
+    function setKeyInputUI() {
+      apiKeyWrapper.classList.remove("hidden");
+      apiReadyWrapper.classList.add("hidden");
+      apiKeyInput.value = api_key;
+    }
+
+    saveKeyBtn.addEventListener("click", () => {
+      const keyInput = apiKeyInput.value.trim();
+      if (!keyInput) {
+        showToast("🔑 Please enter a valid Gemini API key!");
+        return;
+      }
+      api_key = keyInput;
+      localStorage.setItem("matchmood_api_key", keyInput);
+      setKeyReadyUI();
+    });
+
+    changeKeyBtn.addEventListener("click", () => {
+      api_key = "";
+      localStorage.removeItem("matchmood_api_key");
+      setKeyInputUI();
+    });
+
+    // Elegant Custom Toast Catcher
+    function showToast(message) {
+      const toast = document.getElementById("toast-message");
+      const text = document.getElementById("toast-text");
+      text.textContent = message;
+      
+      toast.style.opacity = "1";
+      toast.style.transform = "translate(-1/2, 0)";
+      
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translate(-1/2, -16px)";
+      }, 4000);
+    }
+
+    // Stadium Map Interaction - Pulse active Gate
+    function pulseGateOnMap(gateNum) {
+      // Clear existing pulses for safety
+      for (const key in gatesMark) {
+        const pulse = document.getElementById(gatesMark[key].pulse);
+        const dot = document.getElementById(gatesMark[key].dot);
+        pulse.classList.add("opacity-0");
+        pulse.classList.remove("gate-pulsing");
+        dot.setAttribute("fill", key === "1" ? "#E53935" : key === "2" ? "#1565C0" : key === "3" ? "#F9A825" : "#E91E8C"); // default colors
+      }
+
+      const activePulse = document.getElementById(gatesMark[gateNum].pulse);
+      const activeDot = document.getElementById(gatesMark[gateNum].dot);
+      
+      if (activePulse) {
+        activePulse.classList.remove("opacity-0");
+        activePulse.classList.add("gate-pulsing");
+        // Glow in vibrant emerald neon green
+        activeDot.setAttribute("fill", "#2ecc71");
+        
+        // Remove glow pulse after 6.5s to keep map clean
+        setTimeout(() => {
+          activePulse.classList.remove("gate-pulsing");
+          activePulse.classList.add("opacity-0");
+          activeDot.setAttribute("fill", gateNum === 1 ? "#E53935" : gateNum === 2 ? "#1565C0" : gateNum === 3 ? "#F9A825" : "#E91E8C");
+        }, 6500);
+      }
+    }
+
+    // Watch text output and link gate maps
+    function checkMapTriggerFromText(text) {
+      const parsedText = text.toLowerCase();
+      if (parsedText.includes("gate 1") || parsedText.includes("gate-1")) {
+        pulseGateOnMap(1);
+      } else if (parsedText.includes("gate 2") || parsedText.includes("gate-2")) {
+        pulseGateOnMap(2);
+      } else if (parsedText.includes("gate 3") || parsedText.includes("gate-3")) {
+        pulseGateOnMap(3);
+      } else if (parsedText.includes("gate 4") || parsedText.includes("gate-4")) {
+        pulseGateOnMap(4);
+      }
+    }
+
+    // Auto-scroll chat area correctly
+    const chatContainer = document.getElementById("help-chat-messages");
+    function scrollChatToBottom() {
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 50);
+    }
+
+    // Direct fetch call to Gemini API
+    async function fetchGeminiAPI(prompt, systemInstruction) {
+      if (!api_key) {
+        showToast("🔑 Please add your Gemini API key to continue");
+        // Shake input key as direct reminder
+        apiKeyInput.classList.add("ring-2", "ring-red-500", "animate-pulse");
+        setTimeout(() => {
+          apiKeyInput.classList.remove("ring-2", "ring-red-500", "animate-pulse");
+        }, 2000);
+        throw new Error("No API key");
+      }
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
+      
+      // Setup Controller for 8s Custom Timeout requirement
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const requestPayload = {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      };
+
+      if (systemInstruction) {
+        requestPayload.systemInstruction = {
+          parts: [{ text: systemInstruction }]
+        };
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestPayload),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const outputText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!outputText) {
+          throw new Error("Empty payload from server");
+        }
+
+        return outputText;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        
+        if (error.name === "AbortError") {
+          throw new Error("TIMEOUT");
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    // Help Nav Core - Append Dynamic Bubbles
+    function appendUserMessage(text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "flex flex-col gap-1 items-end text-right max-w-[85%] self-end animate-fade-in animate-slide-up";
+      msgDiv.innerHTML = `
+        <span class="text-[9px] text-slate-400 font-bold mr-1 uppercase">ME</span>
+        <div class="bg-[#004C97] text-white rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed shadow-xs">
+          ${text}
+        </div>
+      `;
+      chatContainer.appendChild(msgDiv);
+      scrollChatToBottom();
+    }
+
+    function appendAIMessage(text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "flex flex-col gap-1 items-start text-left max-w-[85%] self-start animate-fade-in animate-slide-up";
+      msgDiv.innerHTML = `
+        <span class="text-[10px] text-slate-400 font-bold ml-1 tracking-wider uppercase flex items-center gap-1">
+          ✨ MatchMood AI • Gemini 1.5 Flash
+        </span>
+        <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed shadow-xs border border-slate-200/50">
+          ${text}
+        </div>
+      `;
+      chatContainer.appendChild(msgDiv);
+      scrollChatToBottom();
+      checkMapTriggerFromText(text);
+    }
+
+    function showTypingIndicator() {
+      const indicator = document.createElement("div");
+      indicator.id = "help-chat-typing-indicator";
+      indicator.className = "flex flex-col gap-1 items-start text-left max-w-[85%] self-start animate-fade-in";
+      indicator.innerHTML = `
+        <span class="text-[10px] text-slate-400 font-bold ml-1 tracking-wider uppercase">✨ MatchMood AI</span>
+        <div class="bg-slate-100 border border-slate-200/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center justify-center gap-1.5 shadow-xs">
+          <div class="w-2 h-2 rounded-full bg-[#004C97] animate-typing-1"></div>
+          <div class="w-2 h-2 rounded-full bg-[#004C97] animate-typing-2"></div>
+          <div class="w-2 h-2 rounded-full bg-[#004C97] animate-typing-3"></div>
+        </div>
+      `;
+      chatContainer.appendChild(indicator);
+      scrollChatToBottom();
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById("help-chat-typing-indicator");
+      if (indicator) {
+        indicator.parentElement.removeChild(indicator);
+      }
+    }
+
+    // Handles help messaging flow
+    async function handleUserQuery(inputText) {
+      if (!inputText.trim() || isRequesting) return;
+      
+      isRequesting = true;
+      appendUserMessage(inputText);
+      showTypingIndicator();
+
+      const sysPrompt = `You are MatchMood AI, a smart and friendly stadium navigator for the MI vs RR IPL match at Wankhede Stadium, Mumbai. Help fans find gates, seats, food stalls, restrooms, and exits. Reply in maximum 3 short lines. Be warm, precise, and always add one helpful bonus tip. Only use these gates: Gate 1 (West), Gate 2 (South), Gate 3 (North-East), Gate 4 (South-East). Never invent locations.`;
+
+      try {
+        const responseText = await fetchGeminiAPI(inputText, sysPrompt);
+        removeTypingIndicator();
+        appendAIMessage(responseText);
+      } catch (err) {
+        removeTypingIndicator();
+        if (err.message === "TIMEOUT") {
+          // Toast timeout option
+          appendAIMessage("Taking longer than usual... tap to retry");
+          showToast("⏳ Request timed out. Please retry!");
+        } else {
+          appendAIMessage("MatchMood AI is catching its breath, try again! 🙏");
+          showToast("❌ Unable to connect to Gemini API. Check key/connection!");
+        }
+      } finally {
+        isRequesting = false;
+      }
+    }
+
+    // Send Shortcut trigger
+    function sendShortcut(title, prompt) {
+      handleUserQuery(prompt);
+    }
+
+    // Chat submit events
+    const helpChatSendBtn = document.getElementById("help-chat-send");
+    const helpChatInputEl = document.getElementById("help-chat-input");
+
+    helpChatSendBtn.addEventListener("click", () => {
+      const q = helpChatInputEl.value.trim();
+      if (q) {
+        handleUserQuery(q);
+        helpChatInputEl.value = "";
+      }
+    });
+
+    helpChatInputEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const q = helpChatInputEl.value.trim();
+        if (q) {
+          handleUserQuery(q);
+          helpChatInputEl.value = "";
+        }
+      }
+    });
+
+
+    // ==============================================
+    // FAN ZONE INTERACTIONS
+    // ==============================================
+
+    const wicketBtn = document.getElementById("wicket-btn");
+    const sixBtn = document.getElementById("six-btn");
+    const chantBtn = document.getElementById("chant-btn");
+    
+    const reactionCard = document.getElementById("dynamic-reaction-card");
+    const reactionTypeBadge = document.getElementById("reaction-type-badge");
+    const reactionTextEl = document.getElementById("reaction-text");
+    const copyChantContainer = document.getElementById("copy-chant-container");
+    const copyChantBtn = document.getElementById("copy-chant-btn");
+    const copyFeedback = document.getElementById("copy-feedback-label");
+
+    const fanSystemPrompt = `You are MatchMood AI, an ultra-hype cricket fan AI at MI vs RR IPL match. Be short (1-2 sentences), loud, energetic, use cricket slang. For wicket reactions: scream excitement. For six reactions: go wild. For chants: write exactly 4 rhyming lines for Mumbai Indians. For predictions: give a bold funny prediction with a win % for MI. Always sign off with 💙 MatchMood AI`;
+
+    let activeChantValue = "";
+
+    function showReactionLoading(type) {
+      reactionCard.classList.remove("hidden");
+      copyChantContainer.classList.add("hidden");
+      
+      // Card text border coloring
+      reactionCard.className = "bg-white rounded-2xl shadow-sm border border-slate-100 p-4 transition-all duration-300 transform scale-100";
+      
+      if (type === "Wicket") {
+        reactionTypeBadge.textContent = "🏏 OUT!";
+        reactionTypeBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200";
+        reactionTextEl.className = "text-slate-800 text-sm font-semibold italic border-l-4 border-red-500 pl-3 py-1";
+      } else if (type === "Six") {
+        reactionTypeBadge.textContent = "💥 SIX!";
+        reactionTypeBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200";
+        reactionTextEl.className = "text-slate-800 text-sm font-semibold italic border-l-4 border-blue-500 pl-3 py-1";
+      } else {
+        reactionTypeBadge.textContent = "🎵 MI Chant";
+        reactionTypeBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200";
+        reactionTextEl.className = "text-slate-800 text-sm font-semibold italic border-l-4 border-amber-500 pl-3 py-1";
+      }
+
+      reactionTextEl.innerHTML = `
+        <div class="flex items-center gap-1.5 font-mono text-xs text-slate-400">
+          <span>Writing hype...</span>
+          <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-1"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-2"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-3"></div>
+        </div>
+      `;
+    }
+
+    async function handleFanButton(type, prompt) {
+      if (isRequesting) return;
+      isRequesting = true;
+      showReactionLoading(type);
+
+      try {
+        const responseText = await fetchGeminiAPI(prompt, fanSystemPrompt);
+        
+        // Setup reaction styling based on return block
+        if (type === "Wicket") {
+          reactionCard.className = "bg-red-50/50 rounded-2xl shadow-sm border border-red-100 p-4 transition-all duration-300";
+        } else if (type === "Six") {
+          reactionCard.className = "bg-blue-50/50 rounded-2xl shadow-sm border border-blue-100 p-4 transition-all duration-300";
+        } else {
+          reactionCard.className = "bg-amber-50/50 rounded-2xl shadow-sm border border-amber-100 p-4 transition-all duration-300";
+          activeChantValue = responseText;
+          copyChantContainer.classList.remove("hidden");
+        }
+
+        reactionTextEl.innerHTML = responseText.replace(/\n/g, "<br>");
+      } catch (err) {
+        reactionCard.classList.add("hidden");
+        if (err.message === "TIMEOUT") {
+          showToast("⏳ Take longer... retry tapping!");
+        } else {
+          showToast("❌ Catching its breath. Please try again!");
+        }
+      } finally {
+        isRequesting = false;
+      }
+    }
+
+    wicketBtn.addEventListener("click", () => {
+      triggerConfetti();
+      handleFanButton("Wicket", "Give a wild hype reaction for a WICKET that fell!");
+    });
+
+    sixBtn.addEventListener("click", () => {
+      triggerFireworks();
+      handleFanButton("Six", "Give a highly-energized explosive reaction for a SIX that was smashed!");
+    });
+
+    chantBtn.addEventListener("click", () => {
+      handleFanButton("Chant", "Write exactly 4 rhyming lines chant in support of Mumbai Indians. Energetic loud, clean rhythm, ready to copy paste!");
+    });
+
+    // Copy to clipboard chant routine
+    copyChantBtn.addEventListener("click", () => {
+      if (!activeChantValue) return;
+      navigator.clipboard.writeText(activeChantValue).then(() => {
+        // Flash Copied state
+        copyFeedback.style.opacity = "1";
+        setTimeout(() => {
+          copyFeedback.style.opacity = "0";
+        }, 2000);
+      }).catch(err => {
+        showToast("⚠️ Unable to copy chant automatically.");
+      });
+    });
+
+
+    // ==============================================
+    // PREDICTOR SYSTEM MATCH CONTROLS
+    // ==============================================
+
+    const predictBtn = document.getElementById("predict-btn");
+    const predictInput = document.getElementById("predict-input");
+    
+    const predictLoader = document.getElementById("predict-loader");
+    const predictOutput = document.getElementById("predict-output");
+    const predictText = document.getElementById("predict-text");
+    const winPctBadge = document.getElementById("win-pct-badge");
+
+    predictBtn.addEventListener("click", async () => {
+      if (isRequesting) return;
+      
+      const customInput = predictInput.value.trim();
+      const finalPrompt = customInput 
+        ? `Given context: "${customInput}". Predict who wins Mumbai Indians vs Rajasthan Royals and provide win % probability percentage for MI in single-sentence funny fan output.`
+        : `MI 142/4 (16.2 ov). Predict who wins Mumbai Indians vs Rajasthan Royals and provide win probability % percentage for MI with extremely funny fan prediction.`;
+
+      isRequesting = true;
+      predictLoader.classList.remove("hidden");
+      predictOutput.classList.add("hidden");
+
+      try {
+        const responseText = await fetchGeminiAPI(finalPrompt, fanSystemPrompt);
+        
+        predictLoader.classList.add("hidden");
+        predictOutput.classList.remove("hidden");
+        predictOutput.classList.add("animate-fade-in");
+        
+        predictText.textContent = responseText;
+
+        // Try to parse WIN match percentages dynamically or default to a cool estimate
+        const pctRegex = /(\d+)%/;
+        const match = responseText.match(pctRegex);
+        if (match && match[1]) {
+          winPctBadge.textContent = `MI Chance: ${match[1]}%`;
+        } else {
+          // Generate a random-looking hot dynamic estimate 50% to 90%
+          const mockPct = Math.floor(Math.random() * 41) + 50; 
+          winPctBadge.textContent = `MI Chance: ${mockPct}%`;
+        }
+
+      } catch (err) {
+        predictLoader.classList.add("hidden");
+        if (err.message === "TIMEOUT") {
+          showToast("⏳ Timeout - prediction took too long!");
+        } else {
+          showToast("❌ Unable to fetch prediction analysis!");
+        }
+      } finally {
+        isRequesting = false;
+      }
+    });
+
+  </script>
+</body>
+</html>
